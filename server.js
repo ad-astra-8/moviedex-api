@@ -12,7 +12,7 @@ app.use(helmet())
 app.use(cors())
 app.use(validateBearerToken);
 
-app.get('/movie', handleGetMovie)
+app.get('/movie', handleGetMovie) 
 
 
 function validateBearerToken(req, res, next) {
