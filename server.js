@@ -4,15 +4,15 @@ const morgan = require('morgan')
 const helmet = require('helmet')
 const cors = require('cors')
 const app = express()
-const PORT = 8000
 const MOVIEDEX = require('./moviedex.json');
 
-app.use(morgan('dev'))
+const morganSetting = process.env.NODE_ENV === 'production' ? 'tiny' : 'common'
+app.use(morgan(morganSetting))
 app.use(helmet())
 app.use(cors())
 app.use(validateBearerToken);
 
-app.get('/movie', handleGetMovie) 
+app.get('/movie', handleGetMovie)
 
 
 function validateBearerToken(req, res, next) {
@@ -43,13 +43,24 @@ function handleGetMovie(req, res) {
 
     if (req.query.avg_vote) {
         response = response.filter(movie => {
-         return Number(movie.avg_vote) >= Number(req.query.avg_vote)
+            return Number(movie.avg_vote) >= Number(req.query.avg_vote)
         })
     }
 
     res.json(response)
 }
 
+app.use((error, req, res, next) => {
+    let response
+    if (process.env.NODE_ENV === 'production') {
+        response = { error: { message: 'server error' } }
+    } else {
+        response = { error }
+    }
+    res.status(500).json(response)
+})
+
+const PORT = process.env.PORT || 8000
 
 app.listen(PORT, () => {
     console.log(`Server listening at http://localhost:${PORT}`)
